@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Floe</title>
+  <meta name="theme-color" content="#E8517A">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Floe">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Daily check-in screen -->
+  <div id="checkinScreen" class="checkin-screen hidden">
+    <div class="checkin-inner">
+      <div class="checkin-greeting" id="checkinGreeting">Goedemorgen</div>
+      <h2 class="checkin-title">Hoe voel je je vandaag?</h2>
+      <p class="checkin-sub" id="checkinPhaseSub"></p>
+      <div class="mood-grid" id="moodGrid">
+        <button class="mood-btn" data-mood="uitgeput" data-emoji="🪫">
+          <span class="mood-emoji">🪫</span>
+          <span class="mood-label">Uitgeput</span>
+        </button>
+        <button class="mood-btn" data-mood="moe" data-emoji="😴">
+          <span class="mood-emoji">😴</span>
+          <span class="mood-label">Moe</span>
+        </button>
+        <button class="mood-btn" data-mood="normaal" data-emoji="😌">
+          <span class="mood-emoji">😌</span>
+          <span class="mood-label">Normaal</span>
+        </button>
+        <button class="mood-btn" data-mood="energiek" data-emoji="⚡">
+          <span class="mood-emoji">⚡</span>
+          <span class="mood-label">Energiek</span>
+        </button>
+        <button class="mood-btn" data-mood="prikkelbaar" data-emoji="😤">
+          <span class="mood-emoji">😤</span>
+          <span class="mood-label">Prikkelbaar</span>
+        </button>
+      </div>
+      <button class="checkin-skip" id="checkinSkip">Overslaan</button>
+    </div>
+  </div>
+
+  <!-- Main app -->
+  <div id="app" class="hidden">
+    <header class="app-header">
+      <div class="header-inner">
+        <h1 class="app-title">floe</h1>
+        <div class="header-right">
+          <button class="mood-today-btn" id="moodTodayBtn" aria-label="Stemming vandaag"></button>
+          <button class="settings-btn" id="settingsBtn" aria-label="Instellingen">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <!-- Today card -->
+      <section class="today-card" id="todayCard">
+        <div class="phase-ring-wrapper">
+          <canvas id="cycleRing" width="220" height="220"></canvas>
+          <div class="phase-center-text">
+            <div class="cycle-day-label">dag</div>
+            <div class="cycle-day-number" id="cycleDayNumber">—</div>
+            <div class="phase-name" id="phaseName">Begin met loggen</div>
+          </div>
+        </div>
+        <div class="phase-details">
+          <p class="phase-description" id="phaseDescription">Log je eerste menstruatiedag om te beginnen.</p>
+        </div>
+      </section>
+
+      <!-- Stats row -->
+      <section class="cards-row">
+        <div class="info-card">
+          <div class="card-icon">🌙</div>
+          <div class="card-label">volgende periode</div>
+          <div class="card-value" id="nextPeriodValue">—</div>
+          <div class="card-sub" id="nextPeriodSub">nog — dagen</div>
+        </div>
+        <div class="info-card">
+          <div class="card-icon">🔄</div>
+          <div class="card-label">gemiddelde cyclus</div>
+          <div class="card-value" id="avgCycleValue">28 d</div>
+          <div class="card-sub" id="avgCycleSub">standaard</div>
+        </div>
+      </section>
+
+      <!-- Fertility + PMS cards -->
+      <section class="cards-row">
+        <div class="info-card">
+          <div class="card-icon">🌸</div>
+          <div class="card-label">vruchtbaar venster</div>
+          <div class="card-value" id="fertilityValue">—</div>
+          <div class="card-sub" id="fertilitySub">—</div>
+        </div>
+        <div class="info-card">
+          <div class="card-icon">🌧</div>
+          <div class="card-label">PMS venster</div>
+          <div class="card-value" id="pmsValue">—</div>
+          <div class="card-sub" id="pmsSub">—</div>
+        </div>
+      </section>
+
+      <!-- Month ahead calendar -->
+      <section class="calendar-section">
+        <div class="section-header">
+          <h2 class="section-title">Maand vooruit</h2>
+          <div class="calendar-legend-mini">
+            <span class="mini-legend-item"><span class="mini-dot" style="background:#E8517A"></span>menstruatie</span>
+            <span class="mini-legend-item"><span class="mini-dot mini-dot-ring" style="border-color:#34C759"></span>vruchtbaar</span>
+            <span class="mini-legend-item"><span class="mini-dot" style="background:#C4B5D6;opacity:0.7"></span>PMS</span>
+          </div>
+        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+      </section>
+
+      <!-- Phase legend -->
+      <section class="phase-legend">
+        <h2 class="section-title">Cyclusfasen</h2>
+        <div class="legend-items">
+          <div class="legend-item" id="legend-menstruation" tabindex="0">
+            <div class="legend-dot" style="background:#E8517A"></div>
+            <div class="legend-text">
+              <div class="legend-main">
+                <span class="legend-name">Menstruatie</span>
+                <span class="legend-days" id="days-menstruation">dag 1–5</span>
+              </div>
+              <p class="legend-tooltip">Het baarmoederslijmvlies wordt afgestoten. Energie is vaak laag — rust is belangrijk. Bloedingen, krampen en vermoeidheid komen veel voor.</p>
+            </div>
+          </div>
+          <div class="legend-item" id="legend-follicular" tabindex="0">
+            <div class="legend-dot" style="background:#F4A261"></div>
+            <div class="legend-text">
+              <div class="legend-main">
+                <span class="legend-name">Folliculair</span>
+                <span class="legend-days" id="days-follicular">dag 6–13</span>
+              </div>
+              <p class="legend-tooltip">Oestrogeenniveaus stijgen terwijl een follikel rijpt. Energie neemt toe, de stemming verbetert en je kunt je scherper en creatiever voelen.</p>
+            </div>
+          </div>
+          <div class="legend-item" id="legend-ovulation" tabindex="0">
+            <div class="legend-dot" style="background:#A8D5A2"></div>
+            <div class="legend-text">
+              <div class="legend-main">
+                <span class="legend-name">Ovulatie</span>
+                <span class="legend-days" id="days-ovulation">dag 14–16</span>
+              </div>
+              <p class="legend-tooltip">Een rijpe eicel wordt vrijgegeven. Je bent het meest vruchtbaar — LH piekt en oestrogeen is op z'n hoogst. Sociaal, energiek en zelfverzekerd gevoel.</p>
+            </div>
+          </div>
+          <div class="legend-item" id="legend-luteal" tabindex="0">
+            <div class="legend-dot" style="background:#9B8EC4"></div>
+            <div class="legend-text">
+              <div class="legend-main">
+                <span class="legend-name">Luteaal</span>
+                <span class="legend-days" id="days-luteal">dag 17–28</span>
+              </div>
+              <p class="legend-tooltip">Progesteron stijgt en daalt daarna. Het lichaam bereidt zich voor op menstruatie. Mogelijke PMS: prikkelbaarheid, opgeblazen gevoel, vermoeidheid in de laatste dagen.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Log button -->
+      <section class="log-section">
+        <button class="log-btn" id="logBtn">
+          <span class="log-btn-icon">+</span>
+          <span>Log eerste dag</span>
+        </button>
+      </section>
+
+      <!-- History -->
+      <section class="history-section">
+        <h2 class="section-title">Geschiedenis</h2>
+        <ul class="history-list" id="historyList"></ul>
+      </section>
+    </main>
+  </div>
+
+  <!-- Day detail tooltip -->
+  <div class="day-tooltip" id="dayTooltip"></div>
+
+  <!-- Log modal -->
+  <div class="modal-overlay" id="logModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <h2 class="modal-title" id="modalTitle">Eerste dag loggen</h2>
+      <p class="modal-sub">Selecteer de eerste dag van je menstruatie</p>
+      <input type="date" class="date-input" id="dateInput">
+      <div class="modal-actions">
+        <button class="btn-secondary" id="cancelBtn">Annuleer</button>
+        <button class="btn-primary" id="confirmBtn">Opslaan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings modal -->
+  <div class="modal-overlay" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="modal">
+      <h2 class="modal-title" id="settingsTitle">Instellingen</h2>
+      <div class="settings-group">
+        <label class="settings-label" for="periodLengthInput">Gemiddelde menstruatieduur (dagen)</label>
+        <input type="number" class="number-input" id="periodLengthInput" min="1" max="10" value="5">
+      </div>
+      <div class="settings-group">
+        <label class="settings-label" for="notifToggle">Notificatie vóór volgende periode</label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="notifToggle">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="settings-group notif-days-row" id="notifDaysRow">
+        <label class="settings-label" for="notifDaysInput">Hoeveel dagen van tevoren?</label>
+        <input type="number" class="number-input" id="notifDaysInput" min="1" max="14" value="2">
+      </div>
+      <div class="settings-group danger-zone">
+        <button class="btn-danger" id="clearDataBtn">Alle data verwijderen</button>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" id="saveSettingsBtn">Opslaan</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
